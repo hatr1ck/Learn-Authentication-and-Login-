@@ -1,8 +1,8 @@
-let bcrypt = require('bcryptjs'); //putting bcrypt library into variable
-let express = require('express'); //putting express library into variable
-let app = express(); //executing express framework to create our app
+let bcrypt = require('bcryptjs'); 
+let express = require('express'); 
+let app = express();
 
-app.use(express.json()); //enabling json body parsing
+app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
@@ -10,7 +10,7 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-let DB = []
+let DB = [] //faking DataBase
 
 app.post('/register', function (req, res) {
   let username = req.body.username;
@@ -28,11 +28,12 @@ app.post('/register', function (req, res) {
     bcrypt.hash(password, 10, (error, hash) => {
       if (error) return console.log(error);
 
-      DB.push({
+      DB.push({ //simulating new model creation in our DB
         username:username,
         password:hash
       })
-      res.send('Sign up successful!');
+
+      res.send("You're signed in. <br /> username: " + username + "<br /> password: " + password + "<br /> hashed password: "+hash);
     });
 });
 
@@ -40,25 +41,25 @@ app.post('/login', function (req, res) {
   let username = req.body.username;
   let password = req.body.password;
 
-  let user = DB.find(user => user.username === username)
-    if(user){
+  let user = DB.find(user => user.username === username) //searching for user in our DataBase by username property
+    if(user){ //if user is in our db then we want to compare sended password to the password stored in our DB
+    bcrypt.compare(password, user.password, (err, same) => { //storing true or false in the "same" variable
 
-    bcrypt.compare(password, user.password, (error, same) => {
-      if (error) return console.log(error);
+      if (err) return console.log(err); //error handling
 
-      if(same){
-      res.send('Log In successful!');
+      if(same){ // if same is true then login password and password that was stored in DB are match
+      res.send("You're logged in. <br /> username: " + username + "<br /> password: " + password + "<br /> hashed password: "+user.password);
     }
-    else{
+      else{ // if value of same is false then provided password dosen't match with the one that stored in Db
       res.send('Incorrect password')
     }
     });
     }
-    else{
+    else{ // this part of code gets executed if there is no such user in our DB
       res.send('No such user')
     }
 });
 
-app.listen(8080, function () {
+app.listen(8080, ()=> {
   console.log('Your app is listening on port 8080');
 });
